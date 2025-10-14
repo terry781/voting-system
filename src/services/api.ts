@@ -73,7 +73,7 @@ export const votingCardsApi = {
       .select(`
         *,
         votes (*),
-        comments (*)
+        comments (*, user:users(*))
       `)
       .order('created_at', { ascending: false })
 

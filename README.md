@@ -28,7 +28,7 @@ A modern voting system built with Supabase and Next.js, allowing administrators 
 
 ```bash
 git clone https://github.com/terry781/voting-system
-cd voting
+cd voting-system
 ./start.sh
 # Follow the on-screen instructions to configure Supabase
 ```
@@ -52,7 +52,7 @@ cd voting
 2. **Set up the database schema**:
 
    - Go to the SQL Editor in your Supabase dashboard
-   - Copy and paste the contents of `supabase-schema.sql`
+   - Copy and paste the contents of `supabase-schema.sql` and `update-users-rls.sql`
    - Run the SQL script to create all tables and policies
 
 3. **Get your project credentials**:
@@ -65,7 +65,7 @@ cd voting
 
 ```bash
 git clone https://github.com/terry781/voting-system
-cd voting
+cd voting-system
 ./start.sh
 ```
 

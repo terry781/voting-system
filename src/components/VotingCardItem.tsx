@@ -20,10 +20,15 @@ export function VotingCardItem({
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [comments, setComments] = useState(votingCard.comments || []);
 
   useEffect(() => {
     fetchVoteStats();
   }, [votingCard.id]);
+
+  useEffect(() => {
+    setComments(votingCard.comments || []);
+  }, [votingCard.comments]);
 
   const fetchVoteStats = async () => {
     try {
@@ -31,6 +36,15 @@ export function VotingCardItem({
       setVoteStats(data);
     } catch (error) {
       console.error("Failed to fetch vote stats");
+    }
+  };
+
+  const fetchComments = async () => {
+    try {
+      const data = await commentsApi.getByVotingCard(votingCard.id);
+      setComments(data);
+    } catch (error) {
+      console.error("Failed to fetch comments");
     }
   };
 
@@ -59,10 +73,11 @@ export function VotingCardItem({
     if (!newComment.trim()) return;
 
     try {
-      await commentsApi.create({
+      const createdComment = await commentsApi.create({
         content: newComment,
         votingCardId: votingCard.id,
       });
+      setComments([createdComment, ...comments]);
       setNewComment("");
       toast.success("Comment added successfully!");
       setShowComments(true);
@@ -207,7 +222,12 @@ export function VotingCardItem({
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-sm font-medium text-gray-900">Comments</h4>
           <button
-            onClick={() => setShowComments(!showComments)}
+            onClick={() => {
+              if (!showComments) {
+                fetchComments();
+              }
+              setShowComments(!showComments);
+            }}
             className="text-primary-600 hover:text-primary-500 text-sm"
           >
             {showComments ? "Hide" : "Show"} Comments
@@ -231,13 +251,13 @@ export function VotingCardItem({
           </button>
         </form>
 
-        {showComments && votingCard.comments && (
+        {showComments && comments.length > 0 && (
           <div className="space-y-3">
-            {votingCard.comments.map((comment) => (
+            {comments.map((comment) => (
               <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-sm font-medium text-gray-900">
-                    {comment.user.name}
+                    {comment.user?.name || comment.user?.email || "Anonymous"}
                   </span>
                   <span className="text-xs text-gray-500">
                     {new Date(comment.created_at).toLocaleDateString()}

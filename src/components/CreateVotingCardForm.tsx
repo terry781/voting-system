@@ -29,9 +29,9 @@ export function CreateVotingCardForm({
       toast.success("Voting topic created successfully!");
       onSuccess();
     } catch (error: any) {
-      toast.error(
-        error.response?.data?.message || "Failed to create voting topic"
-      );
+      console.error("Error creating voting card:", error);
+      const errorMessage = error.message || "Failed to create voting topic";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

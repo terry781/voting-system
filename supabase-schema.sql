@@ -48,11 +48,15 @@ ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies if they exist (to avoid conflicts)
 DROP POLICY IF EXISTS "Users can view their own profile" ON public.users;
+DROP POLICY IF EXISTS "Everyone can view user profiles" ON public.users;
 DROP POLICY IF EXISTS "Users can update their own profile" ON public.users;
 DROP POLICY IF EXISTS "Everyone can view voting cards" ON public.voting_cards;
 DROP POLICY IF EXISTS "Only admins can create voting cards" ON public.voting_cards;
+DROP POLICY IF EXISTS "Authenticated users can create voting cards" ON public.voting_cards;
 DROP POLICY IF EXISTS "Only admins can update voting cards" ON public.voting_cards;
+DROP POLICY IF EXISTS "Allow updates for voting cards" ON public.voting_cards;
 DROP POLICY IF EXISTS "Only admins can delete voting cards" ON public.voting_cards;
+DROP POLICY IF EXISTS "Admins can delete voting cards" ON public.voting_cards;
 DROP POLICY IF EXISTS "Everyone can view votes" ON public.votes;
 DROP POLICY IF EXISTS "Authenticated users can create votes" ON public.votes;
 DROP POLICY IF EXISTS "Users can only vote once per card" ON public.votes;
@@ -60,8 +64,9 @@ DROP POLICY IF EXISTS "Everyone can view comments" ON public.comments;
 DROP POLICY IF EXISTS "Authenticated users can create comments" ON public.comments;
 
 -- RLS Policies for users table
-CREATE POLICY "Users can view their own profile" ON public.users
-  FOR SELECT USING (auth.uid() = id);
+-- Allow everyone to view user profiles (needed for displaying comment authors)
+CREATE POLICY "Everyone can view user profiles" ON public.users
+  FOR SELECT USING (true);
 
 CREATE POLICY "Users can update their own profile" ON public.users
   FOR UPDATE USING (auth.uid() = id);
@@ -70,15 +75,12 @@ CREATE POLICY "Users can update their own profile" ON public.users
 CREATE POLICY "Everyone can view voting cards" ON public.voting_cards
   FOR SELECT USING (true);
 
-CREATE POLICY "Only admins can create voting cards" ON public.voting_cards
-  FOR INSERT WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.users 
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+-- Allow ALL authenticated users to create voting cards (not just admins)
+CREATE POLICY "Authenticated users can create voting cards" ON public.voting_cards
+  FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
-CREATE POLICY "Only admins can update voting cards" ON public.voting_cards
+-- Only admins can update voting cards
+CREATE POLICY "Allow updates for voting cards" ON public.voting_cards
   FOR UPDATE USING (
     EXISTS (
       SELECT 1 FROM public.users 
@@ -86,7 +88,8 @@ CREATE POLICY "Only admins can update voting cards" ON public.voting_cards
     )
   );
 
-CREATE POLICY "Only admins can delete voting cards" ON public.voting_cards
+-- Only admins can delete voting cards
+CREATE POLICY "Admins can delete voting cards" ON public.voting_cards
   FOR DELETE USING (
     EXISTS (
       SELECT 1 FROM public.users 
