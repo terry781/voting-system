@@ -132,6 +132,25 @@ To create an admin user:
 4. Find your user and change the `role` field from `user` to `admin`
 5. Save the changes
 
+## Test Credentials
+
+For development and testing purposes, you can use these pre-configured accounts:
+
+### Admin Account
+
+- **Email**: `admin@admin.com`
+- **Password**: `admin123`
+- **Role**: Admin (can create, update, delete voting topics)
+
+### User Accounts
+
+- **Email**: `user1@user.com` | **Password**: `user123`
+- **Email**: `user2@user.com` | **Password**: `user123`
+- **Email**: `user3@user.com` | **Password**: `user123`
+- **Role**: User (can vote and comment on topics)
+
+**Note**: These accounts are manually created. You can use them immediately for testing the voting system functionality.
+
 ## Development
 
 The system is built with modern development practices:
