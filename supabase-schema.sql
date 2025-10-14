@@ -152,3 +152,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER update_voting_cards_updated_at
   BEFORE UPDATE ON public.voting_cards
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+
+-- Enable real-time for tables that need live updates
+ALTER PUBLICATION supabase_realtime ADD TABLE public.votes;
+ALTER PUBLICATION supabase_realtime ADD TABLE public.comments;

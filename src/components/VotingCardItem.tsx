@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { VotingCard, VoteStats, votesApi, commentsApi } from "@/services/api";
+import { supabase } from "@/lib/supabase";
 import toast from "react-hot-toast";
 
 interface VotingCardItemProps {
@@ -30,12 +31,55 @@ export function VotingCardItem({
     setComments(votingCard.comments || []);
   }, [votingCard.comments]);
 
+  // Real-time subscriptions
+  useEffect(() => {
+    // Subscribe to vote changes for this voting card
+    const votesChannel = supabase
+      .channel(`votes-${votingCard.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "votes",
+          filter: `voting_card_id=eq.${votingCard.id}`,
+        },
+        () => {
+          fetchVoteStats();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to comment changes for this voting card
+    const commentsChannel = supabase
+      .channel(`comments-${votingCard.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "comments",
+          filter: `voting_card_id=eq.${votingCard.id}`,
+        },
+        () => {
+          fetchComments();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      supabase.removeChannel(votesChannel);
+      supabase.removeChannel(commentsChannel);
+    };
+  }, [votingCard.id]);
+
   const fetchVoteStats = async () => {
     try {
       const data = await votesApi.getStats(votingCard.id);
       setVoteStats(data);
     } catch (error) {
-      console.error("Failed to fetch vote stats");
+      console.error("Failed to fetch vote stats:", error);
     }
   };
 
@@ -44,7 +88,7 @@ export function VotingCardItem({
       const data = await commentsApi.getByVotingCard(votingCard.id);
       setComments(data);
     } catch (error) {
-      console.error("Failed to fetch comments");
+      console.error("Failed to fetch comments:", error);
     }
   };
 
@@ -73,14 +117,14 @@ export function VotingCardItem({
     if (!newComment.trim()) return;
 
     try {
-      const createdComment = await commentsApi.create({
+      await commentsApi.create({
         content: newComment,
         votingCardId: votingCard.id,
       });
-      setComments([createdComment, ...comments]);
       setNewComment("");
       toast.success("Comment added successfully!");
       setShowComments(true);
+      // Real-time subscription will handle updating the comments list
     } catch (error) {
       toast.error("Failed to add comment");
     }
@@ -220,7 +264,9 @@ export function VotingCardItem({
 
       <div className="border-t pt-4">
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-medium text-gray-900">Comments</h4>
+          <h4 className="text-sm font-medium text-gray-900">
+            Comments ({comments.length})
+          </h4>
           <button
             onClick={() => {
               if (!showComments) {
