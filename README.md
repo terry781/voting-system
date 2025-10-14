@@ -27,7 +27,7 @@ A modern voting system built with Supabase and Next.js, allowing administrators 
 ## Quick Start
 
 ```bash
-git clone <your-repo>
+git clone https://github.com/terry781/voting-system
 cd voting
 ./start.sh
 # Follow the on-screen instructions to configure Supabase
@@ -64,7 +64,7 @@ cd voting
 1. **Clone and start the application**:
 
 ```bash
-git clone <your-repo>
+git clone https://github.com/terry781/voting-system
 cd voting
 ./start.sh
 ```
