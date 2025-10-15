@@ -1,23 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { authApi } from "@/services/api";
 import toast from "react-hot-toast";
 
-export function RegisterForm() {
+interface RegisterFormProps {
+  onToggleForm?: () => void;
+}
+
+export function RegisterForm({ onToggleForm }: RegisterFormProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { register, setShowRegisterForm } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await register(email, password, name);
+      await authApi.signUp(email, password, name);
       toast.success("Registration successful!");
+      router.refresh();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Registration failed");
     } finally {
@@ -91,15 +97,17 @@ export function RegisterForm() {
         </button>
       </div>
 
-      <div className="text-center">
-        <button
-          type="button"
-          onClick={() => setShowRegisterForm(false)}
-          className="text-primary-600 hover:text-primary-500 text-sm"
-        >
-          Already have an account? Sign in
-        </button>
-      </div>
+      {onToggleForm && (
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={onToggleForm}
+            className="text-primary-600 hover:text-primary-500 text-sm"
+          >
+            Already have an account? Sign in
+          </button>
+        </div>
+      )}
     </form>
   );
 }

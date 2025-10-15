@@ -1,5 +1,7 @@
-import { supabase } from '@/lib/supabase'
-import type { Database } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/client'
+import type { Database } from '@/lib/supabase/types'
+
+const supabase = createClient()
 
 export type VotingCard = Database['public']['Tables']['voting_cards']['Row'] & {
   votes?: Vote[]

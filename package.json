@@ -13,6 +13,7 @@
     "react": "^18",
     "react-dom": "^18",
     "@supabase/supabase-js": "^2.38.5",
+    "@supabase/ssr": "^0.0.10",
     "react-hook-form": "^7.48.2",
     "react-hot-toast": "^2.4.1"
   },

@@ -1,22 +1,28 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { authApi } from "@/services/api";
 import toast from "react-hot-toast";
 
-export function LoginForm() {
+interface LoginFormProps {
+  onToggleForm?: () => void;
+}
+
+export function LoginForm({ onToggleForm }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login, setShowRegisterForm } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      await login(email, password);
+      await authApi.signIn(email, password);
       toast.success("Login successful!");
+      router.refresh();
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Login failed");
     } finally {
@@ -73,15 +79,17 @@ export function LoginForm() {
         </button>
       </div>
 
-      {/* <div className="text-center">
-        <button
-          type="button"
-          onClick={() => setShowRegisterForm(true)}
-          className="text-primary-600 hover:text-primary-500 text-sm"
-        >
-          Don't have an account? Sign up
-        </button>
-      </div> */}
+      {onToggleForm && (
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={onToggleForm}
+            className="text-primary-600 hover:text-primary-500 text-sm"
+          >
+            Don't have an account? Sign up
+          </button>
+        </div>
+      )}
     </form>
   );
 }

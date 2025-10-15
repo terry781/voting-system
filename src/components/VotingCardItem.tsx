@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { VotingCard, VoteStats, votesApi, commentsApi } from "@/services/api";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import toast from "react-hot-toast";
+
+const supabase = createClient();
 
 interface VotingCardItemProps {
   votingCard: VotingCard;

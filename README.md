@@ -21,8 +21,9 @@ A modern voting system built with Supabase and Next.js, allowing administrators 
 ## Tech Stack
 
 - **Backend**: Supabase (Database, Authentication, Real-time)
-- **Frontend**: Next.js 14, TypeScript, TailwindCSS, React Hook Form
-- **Authentication**: Supabase Auth with role-based access control
+- **Frontend**: Next.js 14 (App Router), TypeScript, TailwindCSS
+- **Authentication**: Supabase Auth with SSR and role-based access control
+- **Architecture**: Server Components first with selective client-side interactivity
 
 ## Quick Start
 
@@ -155,11 +156,31 @@ For development and testing purposes, you can use these pre-configured accounts:
 
 The system is built with modern development practices:
 
-- TypeScript for type safety
-- Component-based architecture
-- Responsive design with TailwindCSS
-- Real-time updates via Supabase
-- Error handling and user feedback
+### Architecture
+
+- **SSR-First Approach**: Server Components by default for better performance
+- **TypeScript**: Full type safety across the application
+- **Component-based**: Modular React component architecture
+- **Responsive Design**: Mobile-first with TailwindCSS
+- **Real-time Updates**: Supabase real-time subscriptions
+- **Error Handling**: Comprehensive error handling and user feedback
+
+### Key Technical Decisions
+
+1. **Server Components**: Main pages render on the server for better SEO and initial load
+2. **Supabase SSR**: Proper separation of client/server Supabase clients
+3. **Middleware**: Session refresh happens automatically on every request
+4. **Client Components**: Only used for interactive features (forms, buttons, etc.)
+5. **Import Separation**: Strict separation between client and server imports
+
+### Development Commands
+
+```bash
+npm run dev     # Start development server
+npm run build   # Build for production
+npm run start   # Start production server
+npm run lint    # Run ESLint
+```
 
 ## Security Features
 
@@ -197,19 +218,23 @@ The database is hosted on Supabase, so no additional setup is needed for the bac
 ## Project Structure
 
 ```
-voting/
+voting-system/
 ├── src/                    # Next.js application source
-│   ├── app/               # App router pages and layouts
-│   ├── components/        # React components
-│   ├── contexts/          # React contexts
-│   ├── lib/              # Utilities and configurations
-│   └── services/         # API services
-├── supabase-schema.sql   # Database setup
-├── start.sh              # Automated startup script
-├── SETUP.md              # Quick setup guide
-├── README.md             # This file
-└── package.json          # Dependencies and scripts
+│   ├── app/               # App Router pages and layouts (Server Components)
+│   ├── components/        # React components (Client Components)
+│   ├── lib/               # Utilities and configurations
+│   │   ├── auth.ts        # Server-side auth utilities
+│   │   └── supabase/      # Supabase client configurations
+│   ├── services/          # API services
+│   └── middleware.ts      # Session refresh middleware
+├── supabase-schema.sql    # Database setup
+├── start.sh               # Automated startup script
+├── PROJECT_STRUCTURE.md   # Detailed structure documentation
+├── README.md              # This file
+└── package.json           # Dependencies and scripts
 ```
+
+For detailed architecture information, see [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md).
 
 ## API Reference
 

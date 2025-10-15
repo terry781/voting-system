@@ -27,6 +27,7 @@ export function CreateVotingCardForm({
     try {
       await votingCardsApi.create(formData);
       toast.success("Voting topic created successfully!");
+      setFormData({ category: "", title: "", description: "" });
       onSuccess();
     } catch (error: any) {
       console.error("Error creating voting card:", error);
