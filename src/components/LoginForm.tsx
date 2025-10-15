@@ -79,7 +79,7 @@ export function LoginForm({ onToggleForm }: LoginFormProps) {
         </button>
       </div>
 
-      {onToggleForm && (
+      {/* {onToggleForm && (
         <div className="text-center">
           <button
             type="button"
@@ -89,7 +89,7 @@ export function LoginForm({ onToggleForm }: LoginFormProps) {
             Don't have an account? Sign up
           </button>
         </div>
-      )}
+      )} */}
     </form>
   );
 }
