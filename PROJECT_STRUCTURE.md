@@ -60,7 +60,6 @@ voting-system/
 ### Documentation
 
 - `README.md` - Main project documentation
-- `SETUP.md` - Quick setup guide for new users
 
 ### Application Logic
 

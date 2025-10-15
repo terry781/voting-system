@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { VotingCard, votingCardsApi } from "@/services/api";
 import { CreateVotingCardForm } from "./CreateVotingCardForm";
 import { VotingCardItem } from "./VotingCardItem";
+import { SearchBar } from "./SearchBar";
 import toast from "react-hot-toast";
 
 export function AdminDashboard() {
   const [votingCards, setVotingCards] = useState<VotingCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
 
   useEffect(() => {
     fetchVotingCards();
@@ -43,6 +46,25 @@ export function AdminDashboard() {
     }
   };
 
+  // Get unique categories
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set(votingCards.map((card) => card.category));
+    return Array.from(uniqueCategories).sort();
+  }, [votingCards]);
+
+  // Filter voting cards based on search query and category
+  const filteredCards = useMemo(() => {
+    return votingCards.filter((card) => {
+      const matchesSearch = searchQuery
+        ? card.title.toLowerCase().includes(searchQuery.toLowerCase())
+        : true;
+      const matchesCategory = categoryFilter
+        ? card.category === categoryFilter
+        : true;
+      return matchesSearch && matchesCategory;
+    });
+  }, [votingCards, searchQuery, categoryFilter]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -73,18 +95,19 @@ export function AdminDashboard() {
         />
       )}
 
-      <div className="grid gap-6">
-        {votingCards.map((card) => (
-          <VotingCardItem
-            key={card.id}
-            votingCard={card}
-            isAdmin={true}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
+      {/* Search Bar */}
+      {votingCards.length > 0 && (
+        <SearchBar
+          searchQuery={searchQuery}
+          categoryFilter={categoryFilter}
+          onSearchChange={setSearchQuery}
+          onCategoryChange={setCategoryFilter}
+          categories={categories}
+        />
+      )}
 
-      {votingCards.length === 0 && (
+      {/* Results */}
+      {votingCards.length === 0 ? (
         <div className="text-center py-12">
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             No voting topics created yet
@@ -98,6 +121,27 @@ export function AdminDashboard() {
           >
             Create First Topic
           </button>
+        </div>
+      ) : filteredCards.length === 0 ? (
+        <div className="text-center py-12">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No topics match your search
+          </h3>
+          <p className="text-gray-500">Try adjusting your search filters.</p>
+        </div>
+      ) : (
+        <div className="grid gap-6">
+          <div className="text-sm text-gray-600">
+            Showing {filteredCards.length} of {votingCards.length} topics
+          </div>
+          {filteredCards.map((card) => (
+            <VotingCardItem
+              key={card.id}
+              votingCard={card}
+              isAdmin={true}
+              onDelete={handleDelete}
+            />
+          ))}
         </div>
       )}
     </div>

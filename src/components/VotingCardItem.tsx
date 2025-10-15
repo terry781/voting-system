@@ -23,7 +23,9 @@ export function VotingCardItem({
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(false);
   const [comments, setComments] = useState(votingCard.comments || []);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
 
   useEffect(() => {
     fetchVoteStats();
@@ -63,8 +65,15 @@ export function VotingCardItem({
           table: "comments",
           filter: `voting_card_id=eq.${votingCard.id}`,
         },
-        () => {
-          fetchComments();
+        async () => {
+          // Silently update comments in background without loading state
+          try {
+            const data = await commentsApi.getByVotingCard(votingCard.id);
+            setComments(data);
+            setCommentsLoaded(true);
+          } catch (error) {
+            console.error("Failed to fetch comments:", error);
+          }
         }
       )
       .subscribe();
@@ -86,11 +95,18 @@ export function VotingCardItem({
   };
 
   const fetchComments = async () => {
+    if (commentsLoaded) return; // Don't fetch if already loaded
+
+    setCommentsLoading(true);
     try {
       const data = await commentsApi.getByVotingCard(votingCard.id);
       setComments(data);
+      setCommentsLoaded(true);
     } catch (error) {
       console.error("Failed to fetch comments:", error);
+      toast.error("Failed to load comments");
+    } finally {
+      setCommentsLoading(false);
     }
   };
 
@@ -126,6 +142,7 @@ export function VotingCardItem({
       setNewComment("");
       toast.success("Comment added successfully!");
       setShowComments(true);
+      setCommentsLoaded(true); // Mark as loaded since we'll get the new comment via real-time
       // Real-time subscription will handle updating the comments list
     } catch (error) {
       toast.error("Failed to add comment");
@@ -270,15 +287,19 @@ export function VotingCardItem({
             Comments ({comments.length})
           </h4>
           <button
-            onClick={() => {
+            onClick={async () => {
               if (!showComments) {
-                fetchComments();
+                setShowComments(true);
+                await fetchComments();
+              } else {
+                setShowComments(false);
               }
-              setShowComments(!showComments);
             }}
             className="text-primary-600 hover:text-primary-500 text-sm"
+            disabled={commentsLoading}
           >
-            {showComments ? "Hide" : "Show"} Comments
+            {commentsLoading ? "Loading..." : showComments ? "Hide" : "Show"}{" "}
+            Comments
           </button>
         </div>
 
@@ -299,21 +320,35 @@ export function VotingCardItem({
           </button>
         </form>
 
-        {showComments && comments.length > 0 && (
-          <div className="space-y-3">
-            {comments.map((comment) => (
-              <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium text-gray-900">
-                    {comment.user?.name || comment.user?.email || "Anonymous"}
-                  </span>
-                  <span className="text-xs text-gray-500">
-                    {new Date(comment.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-700">{comment.content}</p>
+        {showComments && (
+          <div className="mt-4">
+            {commentsLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
               </div>
-            ))}
+            ) : comments.length > 0 ? (
+              <div className="space-y-3">
+                {comments.map((comment) => (
+                  <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium text-gray-900">
+                        {comment.user?.name ||
+                          comment.user?.email ||
+                          "Anonymous"}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(comment.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700">{comment.content}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-gray-500 text-sm">
+                No comments yet. Be the first to comment!
+              </div>
+            )}
           </div>
         )}
       </div>
